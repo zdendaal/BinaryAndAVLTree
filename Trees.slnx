@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AVLtree/Trees.csproj" />
+  <Project Path="TreeTests/TreeTests.csproj" Id="3ad27a4d-2dd9-45e4-8a36-82928fa87afe" />
+</Solution>

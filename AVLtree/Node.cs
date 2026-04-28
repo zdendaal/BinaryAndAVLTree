@@ -9,7 +9,7 @@ namespace Trees
     /// Node structure for AVL tree.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class Node<T> where T : struct, INumber<T>
+    public class Node<T> where T : struct, INumber<T>
     {
         internal Node<T>? left;
         internal int leftDepth = 0;     // depth of the left subtree
@@ -20,6 +20,7 @@ namespace Trees
         internal Node<T>? parent;
 
         internal T value;   // key
+        public T GetValue { get { return value; } }
 
         public Node(T value)
         {

@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="AVLtree/Trees.csproj" />
-  <Project Path="TreeTests/TreeTests.csproj" Id="3ad27a4d-2dd9-45e4-8a36-82928fa87afe" />
+  <Project Path="AVlTreeTest/AVlTreeTest.csproj" Id="a6c03067-b15b-4ec0-9ba6-58f0207e44b8" />
+  <Project Path="TreeTests/BinaryArrayTreeTest.csproj" Id="3ad27a4d-2dd9-45e4-8a36-82928fa87afe" />
 </Solution>

@@ -39,17 +39,25 @@ namespace Trees{
             tree.Add(new Node<int>(9));
             tree.Add(new Node<int>(10));
             tree.Add(new Node<int>(11));
+            tree.Add(new Node<int>(12));
+            tree.Add(new Node<int>(13));
+            tree.Add(new Node<int>(14));
 
-/*
+            /*
             tree.Add(new Node<int>(1));
             tree.Add(new Node<int>(3));
             tree.Add(new Node<int>(2));
-*/
+            */
             PrintInOrder(tree.root);
+            Console.WriteLine("IsValid: " + tree.IsValidAVL());
 
-            tree.Delete(10);
+            tree.Delete(7); // root
+            tree.Delete(10); // leaf in right branche
+            tree.Delete(11); // right subtree root
+            tree.Delete(14); // leaf in right branche, to see if depth propagation from leaf to root works correctly
 
             PrintInOrder(tree.root);
+            Console.WriteLine("IsValid: " + tree.IsValidAVL());
 
             Console.ReadKey();
         }
@@ -58,8 +66,8 @@ namespace Trees{
         /// Prints tree with node in root node inOrder. Non recursive traversing is used to iterate throught all nodes of the tree.
         /// Throws ArgumentNullException if node is null.
         /// </summary>
-        /// <typeparam name="T">key value</typeparam>
-        /// <param name="node"></param>
+        /// <typeparam name="T">Key value.</typeparam>
+        /// <param name="node">Root node of the tree.</param>
         public static void PrintInOrder<T>(Node<T> node) where T : struct, INumber<T>
         {
             Node<T>? currentNodePtr = node;
@@ -104,6 +112,11 @@ namespace Trees{
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Prints 1D array represenation of binary tree. Missing nodes at each level are represented by null. The last element is printed without comma at the end of line.
+        /// </summary>
+        /// <typeparam name="T">Numeric data type.</typeparam>
+        /// <param name="tree">Binary tree.</param>
         public static void PrintBinaryArrayTree<T>(BinaryTreeArrayImpl<T> tree) where T : struct, INumber<T>
         {
             for(int i = 0; i < tree.Count-1; i++)

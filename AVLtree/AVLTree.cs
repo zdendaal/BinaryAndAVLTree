@@ -11,7 +11,7 @@ namespace Trees
     /// But in this example we will use int as value type, to make it easier to test and debug. For real big data, you can replace it or add any objects to nodes.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class AVLTree<T> where T : struct, INumber<T>
+    public class AVLTree<T> : ReferenceTree where T : struct, INumber<T>
     {
         public Node<T>? root;
 
@@ -35,7 +35,7 @@ namespace Trees
                 root = node;
                 return;
             }
-
+            
             var currentPtr = root;
             while (true)
             {
@@ -68,10 +68,22 @@ namespace Trees
             }
         }
 
-        public void Balance(Node<T>? currentPtr)
+        /// <summary>
+        /// Restores the balance of the AVL tree by adjusting node depths and performing rotations as necessary,
+        /// starting from the specified node and moving up toward the root.
+        /// </summary>
+        /// <remarks>This method should be called after operations that may unbalance the tree, such as
+        /// insertions or deletions. It ensures that the AVL tree maintains its height-balanced property, which is
+        /// essential for optimal search, insertion, and deletion performance.</remarks>
+        /// <param name="currentPtr">The node from which to begin balancing. If null, no action is taken. Typically, this is the node where an
+        /// insertion or deletion has occurred.</param>
+        private void Balance(Node<T>? currentPtr)
         {
             while (currentPtr is not null)
             {
+                currentPtr.leftDepth = (currentPtr.left is not null) ? Math.Max(currentPtr.left.rightDepth, currentPtr.left.leftDepth) + 1 : 0;
+                currentPtr.rightDepth = (currentPtr.right is not null) ? Math.Max(currentPtr.right.rightDepth, currentPtr.right.leftDepth) + 1 : 0;
+
                 if (currentPtr.leftDepth - currentPtr.rightDepth > 1) // left rotation
                 {
                     if (currentPtr.left!.leftDepth - currentPtr.left.rightDepth >= 0)
@@ -130,7 +142,7 @@ namespace Trees
         /// <returns>returns new root of subtree</returns>
         private Node<T> LRRotation(Node<T> node)
         {
-            node.left = LeftRotation(node.left);
+            node.left = LeftRotation(node.left!);
             node.leftDepth = Math.Max(node.left.rightDepth, node.left.leftDepth) + 1;
 
             return RightRotation(node);
@@ -206,10 +218,11 @@ namespace Trees
         }
 
         /// <summary>
-        /// Deletes node from AVL tree by dereferencing from parent and replacing with child if needed.
+        /// Deletes node from AVL tree by dereferencing from parent and replacing with child if needed. Then Balance method is called to
+        /// restore balance of the tree. Returns true if node was found and deleted, false if node was not found.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">Value of the node to be deleted.</param>
+        /// <returns>True if node was found and deleted, false if node was not found.</returns>
         public bool Delete(T value)
         {
             Node<T>? node = Find(value);
@@ -227,6 +240,7 @@ namespace Trees
             if (node.left is null && node.right is null)
             {
                 parentChildRef = null;  // in case root is node, parent is not null (parentChildRef is not null)
+                Balance(node.parent);
                 return true;
             }
 
@@ -238,6 +252,7 @@ namespace Trees
                 if (child is not null)
                     child.parent = node.parent;
                 node.parent = null;
+                Balance(child);
                 return true;
             }
 
@@ -257,6 +272,9 @@ namespace Trees
                 {
                     parentChildRef = replacement;   // relation from parent to replacement
                     replacement.parent = node.parent;
+                    replacement.right = node.right;
+                    if (replacement.right is not null)
+                        replacement.right.parent = replacement;
                     //node.parent = null;
                     //node.left = null;
                     //node.right = null;
@@ -276,6 +294,7 @@ namespace Trees
                         replacement.right.parent = replacement;
                     parentChildRef = replacement;   // relation from parent to replacement
                     Node<T> rebalanceFrom = replacement.parent;
+                    rebalanceFrom.rightDepth--;
                     replacement.parent = node.parent;
                     //node.parent = null;
                     //node.left = null;
@@ -299,6 +318,9 @@ namespace Trees
                 {
                     parentChildRef = replacement;   // relation from parent to replacement
                     replacement.parent = node.parent;
+                    replacement.left = node.left;
+                    if (replacement.left is not null)
+                        replacement.left.parent = replacement;
                     //node.parent = null;
                     //node.left = null;
                     //node.right = null;
@@ -318,6 +340,7 @@ namespace Trees
                         replacement.right.parent = replacement;
                     parentChildRef = replacement;   // relation from parent or root (if root value is being deleted) to replacement
                     Node<T> rebalanceFrom = replacement.parent;
+                    rebalanceFrom.leftDepth--;
                     replacement.parent = node.parent;
                     //node.parent = null;
                     //node.left = null;
@@ -331,7 +354,49 @@ namespace Trees
 
 
         /// <summary>
-        /// Cleares tree from all nodes
+        /// Control if tree fulfills AVL tree properties, recursively checks if tree is balancedand if children point to parent. 
+        /// This method is useful for testing and debugging purposes.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValidAVL()
+        {
+            if (root == null) return true;
+            return CheckNode(root);
+        }
+
+        /// <summary>
+        /// Checks if node fulfills AVL tree conditions -> balance factor <= 1 and if children point to parent.
+        /// Then recursively gets height of left and right subtree and checks if they are balanced.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private bool CheckNode(Node<T> node)
+        {
+            if (node.left != null && node.left.parent != node) return false;
+            if (node.right != null && node.right.parent != node) return false;
+
+            int left = GetHeight(node.left);
+            int right = GetHeight(node.right);
+            if (Math.Abs(left - right) > 1 || left != node.leftDepth || right != node.rightDepth) return false;
+
+
+            return (node.left == null || CheckNode(node.left)) &&
+                   (node.right == null || CheckNode(node.right));
+        }
+
+        /// <summary>
+        /// Recursively gets the height of given node.
+        /// </summary>
+        /// <param name="node">Given node.</param>
+        /// <returns>Height of the node.</returns>
+        private int GetHeight(Node<T>? node)
+        {
+            if (node == null) return 0;
+            return Math.Max(GetHeight(node.left), GetHeight(node.right)) + 1;
+        }
+
+        /// <summary>
+        /// Cleares tree from all nodes.
         /// </summary>
         public void Clear()
         {

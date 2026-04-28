@@ -3,7 +3,7 @@ using Xunit;
 
 namespace TreeTests
 {
-    public class BinaryTreeTests
+    public class BinaryArrayTreeTests
     {
         [Fact]
         public void Add_FullTree_ShouldAddValuesInCorrectPositions()
